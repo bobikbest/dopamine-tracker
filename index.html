@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Баланс — восстановление дофаминовой системы</title>
+<link rel="apple-touch-icon" href="data:image/png;base64,">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0B0E11">
+<style>
+  :root{
+    --bg:#0B0E11;
+    --surface:#14181D;
+    --surface-2:#1C2128;
+    --border:rgba(255,255,255,0.07);
+    --text:#EDEEEF;
+    --text-dim:#8A9098;
+    --text-faint:#565C64;
+    --amber:#E8A33D;
+    --amber-dim:rgba(232,163,61,0.14);
+    --teal:#3E8F89;
+    --teal-dim:rgba(62,143,137,0.14);
+    --ember:#C1502E;
+    --ember-dim:rgba(193,80,46,0.14);
+    --radius-l:22px;
+    --radius-m:16px;
+    --radius-s:11px;
+    --font-ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
+    --font-display:"New York","Iowan Old Style",Georgia,serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background:var(--bg);color:var(--text);
+    font-family:var(--font-ui);
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior:none;
+    user-select:none;
+  }
+  #app{
+    max-width:480px;margin:0 auto;height:100vh;height:100dvh;
+    display:flex;flex-direction:column;position:relative;
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgba(232,163,61,0.06), transparent 60%),
+      var(--bg);
+  }
+  header.topbar{
+    padding:calc(env(safe-area-inset-top) + 14px) 20px 12px;
+    display:flex;align-items:baseline;justify-content:space-between;
+    flex-shrink:0;
+  }
+  header.topbar h1{
+    font-family:var(--font-display);
+    font-weight:600;font-size:28px;margin:0;letter-spacing:-0.02em;
+  }
+  header.topbar .day-chip{
+    font-size:12px;color:var(--amber);background:var(--amber-dim);
+    padding:5px 10px;border-radius:20px;font-weight:600;
+    white-space:nowrap;
+  }
+  main{
+    flex:1;overflow-y:auto;overflow-x:hidden;
+    padding:0 16px calc(96px + env(safe-area-inset-bottom));
+    -webkit-overflow-scrolling:touch;
+  }
+  .view{display:none;animation:fadein .25s ease;}
+  .view.active{display:block;}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-l);
+    padding:18px;margin-bottom:12px;
+  }
+  .card h2{margin:0 0 4px;font-size:15px;font-weight:600;}
+  .card .sub{color:var(--text-dim);font-size:12.5px;margin:0 0 14px;line-height:1.5;}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .stat-big{font-family:var(--font-display);font-size:44px;font-weight:600;line-height:1;letter-spacing:-0.02em;}
+  .stat-label{font-size:12px;color:var(--text-dim);margin-top:4px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+  /* Balance beam signature element */
+  .beam-wrap{padding:26px 6px 10px;}
+  .beam-svg{width:100%;height:auto;display:block;}
+  .beam-caption{text-align:center;font-size:12.5px;color:var(--text-dim);margin-top:6px;line-height:1.5;}
+  .beam-caption b{color:var(--text);font-weight:600;}
+
+  button{font-family:var(--font-ui);}
+  .btn{
+    border:none;border-radius:var(--radius-m);
+    padding:15px 18px;font-size:15px;font-weight:600;
+    width:100%;cursor:pointer;transition:transform .12s ease, opacity .12s ease;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn:active{transform:scale(0.97);opacity:0.85;}
+  .btn-primary{background:var(--amber);color:#1A1200;}
+  .btn-danger{background:var(--ember);color:#fff;}
+  .btn-teal{background:var(--teal);color:#062421;}
+  .btn-ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--border);}
+  .btn-sm{padding:11px 14px;font-size:13.5px;border-radius:var(--radius-s);}
+
+  .chip-select{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .chip{
+    padding:10px 14px;border-radius:20px;background:var(--surface-2);
+    border:1px solid var(--border);color:var(--text-dim);font-size:13.5px;
+    cursor:pointer;font-weight:500;
+  }
+  .chip.selected{background:var(--amber-dim);border-color:var(--amber);color:var(--amber);}
+
+  textarea, input[type=text]{
+    width:100%;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:var(--radius-s);color:var(--text);padding:12px;
+    font-family:var(--font-ui);font-size:14.5px;resize:none;line-height:1.5;
+    user-select:text;-webkit-user-select:text;
+  }
+  textarea::placeholder,input::placeholder{color:var(--text-faint);}
+
+  /* Tab bar */
+  nav.tabbar{
+    position:absolute;left:0;right:0;bottom:0;
+    display:flex;justify-content:space-around;align-items:center;
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+    background:rgba(20,24,29,0.86);
+    backdrop-filter:blur(20px) saturate(150%);
+    -webkit-backdrop-filter:blur(20px) saturate(150%);
+    border-top:1px solid var(--border);
+  }
+  .tab{
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    color:var(--text-faint);flex:1;padding:6px 2px;cursor:pointer;
+    background:none;border:none;
+  }
+  .tab svg{width:23px;height:23px;}
+  .tab span{font-size:10px;font-weight:500;}
+  .tab.active{color:var(--amber);}
+
+  /* Urge surf breathing */
+  .breathe-stage{display:flex;flex-direction:column;align-items:center;padding:20px 0 6px;}
+  .breathe-circle{
+    width:150px;height:150px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, rgba(62,143,137,0.5), rgba(62,143,137,0.1));
+    border:1px solid rgba(62,143,137,0.4);
+    display:flex;align-items:center;justify-content:center;
+    animation:breathe 8s ease-in-out infinite;
+    margin-bottom:18px;
+  }
+  @keyframes breathe{
+    0%,100%{transform:scale(0.82);}
+    50%{transform:scale(1.05);}
+  }
+  .breathe-timer{font-family:var(--font-display);font-size:38px;font-weight:600;color:var(--text);}
+  .breathe-word{font-size:13px;color:var(--teal);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;font-weight:600;}
+
+  .list-item{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:13px 0;border-bottom:1px solid var(--border);
+  }
+  .list-item:last-child{border-bottom:none;}
+  .list-item .meta{font-size:12px;color:var(--text-dim);margin-top:2px;}
+  .badge{font-size:11px;padding:3px 8px;border-radius:10px;font-weight:600;}
+  .badge.resisted{background:var(--teal-dim);color:var(--teal);}
+  .badge.gave-in{background:var(--ember-dim);color:var(--ember);}
+
+  .phase-block{border-left:2px solid var(--border);padding:2px 0 20px 16px;position:relative;margin-left:6px;}
+  .phase-block:last-child{padding-bottom:2px;}
+  .phase-block::before{
+    content:"";position:absolute;left:-6.5px;top:2px;width:11px;height:11px;
+    border-radius:50%;background:var(--surface-2);border:2px solid var(--text-faint);
+  }
+  .phase-block.current::before{background:var(--amber);border-color:var(--amber);}
+  .phase-block h3{margin:0 0 4px;font-size:14.5px;}
+  .phase-block .days{font-size:11.5px;color:var(--text-dim);margin-bottom:6px;}
+  .phase-block p{margin:0;font-size:13px;color:var(--text-dim);line-height:1.55;}
+
+  .slider-row{margin-bottom:16px;}
+  .slider-row label{font-size:13px;color:var(--text-dim);display:flex;justify-content:space-between;margin-bottom:6px;}
+  .slider-row label b{color:var(--text);font-weight:600;}
+  input[type=range]{
+    -webkit-appearance:none;width:100%;height:4px;border-radius:2px;
+    background:var(--surface-2);outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+    background:var(--amber);cursor:pointer;border:3px solid var(--bg);
+  }
+
+  .empty{text-align:center;padding:30px 10px;color:var(--text-faint);font-size:13.5px;}
+
+  .modal-overlay{
+    position:absolute;inset:0;background:rgba(0,0,0,0.55);
+    display:flex;align-items:flex-end;z-index:50;opacity:0;pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  .modal-overlay.show{opacity:1;pointer-events:auto;}
+  .modal-sheet{
+    background:var(--surface);width:100%;border-radius:24px 24px 0 0;
+    padding:22px 20px calc(26px + env(safe-area-inset-bottom));
+    transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);
+    max-height:80vh;overflow-y:auto;
+  }
+  .modal-overlay.show .modal-sheet{transform:translateY(0);}
+  .modal-sheet h2{margin:0 0 14px;font-size:18px;}
+  .modal-close{width:36px;height:5px;background:var(--text-faint);border-radius:3px;margin:0 auto 16px;opacity:0.5;}
+
+  .link-btn{background:none;border:none;color:var(--text-dim);font-size:13px;padding:8px;cursor:pointer;text-align:center;width:100%;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <h1 id="viewTitle">Сегодня</h1>
+    <div class="day-chip" id="dayChip">День 1</div>
+  </header>
+
+  <main>
+
+    <!-- ===== TODAY ===== -->
+    <section class="view active" id="view-today">
+      <div class="card">
+        <div class="beam-wrap">
+          <svg class="beam-svg" viewBox="0 0 300 130" id="beamSvg">
+            <line x1="150" y1="14" x2="150" y2="66" stroke="#565C64" stroke-width="2"/>
+            <circle cx="150" cy="10" r="4" fill="#565C64"/>
+            <g id="beamGroup" style="transform-origin:150px 66px;">
+              <line x1="30" y1="66" x2="270" y2="66" stroke="#8A9098" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="30" y1="66" x2="30" y2="92" stroke="#8A9098" stroke-width="1.5"/>
+              <path d="M8 92 a22 14 0 0 0 44 0 Z" fill="none" stroke="#C1502E" stroke-width="2"/>
+              <line x1="270" y1="66" x2="270" y2="92" stroke="#8A9098" stroke-width="1.5"/>
+              <path d="M248 92 a22 14 0 0 0 44 0 Z" fill="none" stroke="#3E8F89" stroke-width="2"/>
+            </g>
+            <circle cx="150" cy="66" r="5" fill="#EDEEEF"/>
+          </svg>
+          <div class="beam-caption" id="beamCaption">Собираю сегодняшние данные…</div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card" style="margin-bottom:12px;">
+          <div class="stat-big" id="statStreak">1</div>
+          <div class="stat-label">дней подряд без срыва</div>
+        </div>
+        <div class="card" style="margin-bottom:12px;">
+          <div class="stat-big" id="statUrges">0</div>
+          <div class="stat-label">порывов пережито сегодня</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Быстрые действия</h2>
+        <p class="sub">Почувствовал тягу открыть TikTok прямо сейчас — начни здесь.</p>
+        <button class="btn btn-teal" onclick="showView('urge')" style="margin-bottom:10px;">🌊 Пережить порыв</button>
+        <button class="btn btn-ghost" onclick="showView('replace')">Найти замену</button>
+      </div>
+
+      <div class="card">
+        <h2>Честность прежде всего</h2>
+        <p class="sub">Лембке: восстановление держится на радикальной честности с собой, а не на идеальной статистике.</p>
+        <button class="btn btn-danger" onclick="openRelapseModal()">Зафиксировать срыв сегодня</button>
+      </div>
+    </section>
+
+    <!-- ===== URGE ===== -->
+    <section class="view" id="view-urge">
+      <div class="card">
+        <h2>Что сейчас включило тягу?</h2>
+        <p class="sub">Назвать триггер — первый шаг к тому, чтобы он потерял автоматическую власть над рукой.</p>
+        <div class="chip-select" id="triggerChips">
+          <div class="chip" data-trigger="Скука">Скука</div>
+          <div class="chip" data-trigger="Автоматически">Рука сама потянулась</div>
+          <div class="chip" data-trigger="Усталость">Усталость</div>
+          <div class="chip" data-trigger="Тревога">Тревога / стресс</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="breathe-stage">
+          <div class="breathe-circle"><div style="text-align:center;">
+            <div class="breathe-timer" id="urgeTimer">15:00</div>
+            <div class="breathe-word" id="breatheWord">дыши</div>
+          </div></div>
+        </div>
+        <p class="sub" style="text-align:center;margin-bottom:16px;">Порыв — это волна: растёт, достигает пика и спадает сама, обычно за 10–20 минут, если ты не подкармливаешь её открытием приложения. Задача — не бороться, а переждать.</p>
+        <div class="row" style="gap:10px;margin-bottom:10px;">
+          <button class="btn btn-ghost btn-sm" onclick="setUrgeDuration(5)">5 мин</button>
+          <button class="btn btn-ghost btn-sm" onclick="setUrgeDuration(10)">10 мин</button>
+          <button class="btn btn-ghost btn-sm" onclick="setUrgeDuration(15)">15 мин</button>
+        </div>
+        <button class="btn btn-teal" id="urgeStartBtn" onclick="startUrgeTimer()">Начать таймер</button>
+      </div>
+
+      <div class="card">
+        <h2>Чем закончилось?</h2>
+        <div class="row" style="gap:10px;">
+          <button class="btn btn-teal btn-sm" onclick="logUrgeOutcome('resisted')">✅ Пережил</button>
+          <button class="btn btn-ghost btn-sm" onclick="logUrgeOutcome('gave_in')">Открыл TikTok</button>
+        </div>
+      </div>
+
+      <div class="card" id="urgeHistoryCard">
+        <h2>Сегодняшние порывы</h2>
+        <div id="urgeHistoryList" class="empty">Пока ничего не записано.</div>
+      </div>
+    </section>
+
+    <!-- ===== REPLACE ===== -->
+    <section class="view" id="view-replace">
+      <div class="card">
+        <h2>Замени, не подавляй</h2>
+        <p class="sub">Лембке: убрать источник дофамина недостаточно — мозг ищет, чем заполнить пустоту. Дай ему конкретную альтернативу заранее, а не в момент скуки.</p>
+      </div>
+      <div class="card" id="replaceList"></div>
+      <div class="card">
+        <h2>Своя активность</h2>
+        <input type="text" id="customReplaceInput" placeholder="Например: набросать лендинг клиенту">
+        <div style="height:10px;"></div>
+        <button class="btn btn-ghost" onclick="addCustomReplace()">Добавить в список</button>
+      </div>
+    </section>
+
+    <!-- ===== JOURNAL ===== -->
+    <section class="view" id="view-journal">
+      <div class="card">
+        <h2>Ежедневный чек-ин</h2>
+        <p class="sub">Пара минут вечером. Без самобичевания — просто данные для следующего дня.</p>
+        <div class="slider-row">
+          <label>Экранное время в TikTok сегодня <b id="usageVal">—</b></label>
+          <input type="range" id="usageSlider" min="0" max="300" step="5" oninput="updateSliderLabel('usage')">
+        </div>
+        <div class="slider-row">
+          <label>Тревожность в течение дня <b id="anxVal">3/5</b></label>
+          <input type="range" id="anxSlider" min="1" max="5" step="1" value="3" oninput="updateSliderLabel('anx')">
+        </div>
+        <div class="slider-row">
+          <label>Скука, которую я реально выдержал <b id="boredVal">3/5</b></label>
+          <input type="range" id="boredSlider" min="1" max="5" step="1" value="3" oninput="updateSliderLabel('bored')">
+        </div>
+        <textarea id="journalNote" rows="3" placeholder="Что заметил сегодня? Когда было тяжелее всего?"></textarea>
+        <div style="height:12px;"></div>
+        <button class="btn btn-primary" onclick="saveJournalEntry()">Сохранить запись</button>
+      </div>
+
+      <div class="card">
+        <h2>История</h2>
+        <div id="journalHistoryList" class="empty">Записей пока нет.</div>
+      </div>
+    </section>
+
+    <!-- ===== PLAN ===== -->
+    <section class="view" id="view-plan">
+      <div class="card">
+        <h2>30 дней на перезагрузку</h2>
+        <p class="sub">По Лембке, рецепторам дофамина нужно от двух недель до месяца устойчивого воздержания, чтобы вернуть чувствительность к обычным радостям. Первые 4 дня — самые тяжёлые, и именно там ты срывался раньше.</p>
+        <div class="phase-block current" id="phaseBlock1">
+          <h3>Фаза 1 — Дефицит</h3>
+          <div class="days">Дни 1–4</div>
+          <p>Раздражительность и тревога усилятся — это не сбой, а признак того, что процесс идёт. Скука будет отдавать тревогой: не беги от неё в телефон, дай ей 15 минут по таймеру в разделе «Порыв».</p>
+        </div>
+        <div class="phase-block" id="phaseBlock2">
+          <h3>Фаза 2 — Выравнивание</h3>
+          <div class="days">Дни 5–14</div>
+          <p>Острота спадает. Скука начинает ощущаться просто как скука, а не как паника. Закрепляй замены из соответствующего раздела — они формируют новую колею.</p>
+        </div>
+        <div class="phase-block" id="phaseBlock3">
+          <h3>Фаза 3 — Восстановление базовой линии</h3>
+          <div class="days">Дни 15–30</div>
+          <p>Обычные дела — код, разработка, общение — снова начинают приносить удовольствие сами по себе, без внешнего допинга. Это и есть цель: не сила воли, а починенная система вознаграждения.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Физические барьеры (self-binding)</h2>
+        <p class="sub">У тебя рука тянется к приложению автоматически — это не лечится силой воли, только барьерами между рукой и приложением.</p>
+        <ul style="margin:0;padding-left:18px;color:var(--text-dim);font-size:13.5px;line-height:1.9;">
+          <li>Удали TikTok физически, а не просто скрой — вход через браузер должен требовать логина каждый раз</li>
+          <li>Экран в оттенках серого днём (Настройки → Экранное время → Ограничения контента → Категории контента)</li>
+          <li>Телефон вне комнаты во время рабочих блоков — не в кармане</li>
+          <li>Код-пароль на переустановку из App Store знает только близкий человек</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Письмо самому себе</h2>
+        <p class="sub">Метод Лембке: письменное обязательство, которое ты перечитываешь в момент слабости. Опиши: зачем тебе это, что конкретно ты обещаешь, и что сделаешь в момент срыва.</p>
+        <textarea id="bindingLetter" rows="6" placeholder="Я бросаю TikTok, потому что..."></textarea>
+        <div style="height:10px;"></div>
+        <button class="btn btn-ghost" onclick="saveBindingLetter()">Сохранить</button>
+      </div>
+
+      <div class="card">
+        <h2>Начать заново</h2>
+        <p class="sub">Если нужно сбросить дату старта детокса.</p>
+        <button class="btn btn-ghost" onclick="confirmResetStart()">Установить день 1 = сегодня</button>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab active" data-view="today" onclick="showView('today')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4M12 19.6V22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M2 12h2.4M19.6 12H22M4.9 19.1l1.7-1.7M17.4 6.6l1.7-1.7"/></svg>
+      <span>Сегодня</span>
+    </button>
+    <button class="tab" data-view="urge" onclick="showView('urge')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/></svg>
+      <span>Порыв</span>
+    </button>
+    <button class="tab" data-view="replace" onclick="showView('replace')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3M17 4v3.5h-3.5M7 20v-3.5h3.5"/></svg>
+      <span>Замена</span>
+    </button>
+    <button class="tab" data-view="journal" onclick="showView('journal')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h11l3 3v13H5z"/><path d="M9 9h7M9 13h7M9 17h4"/></svg>
+      <span>Дневник</span>
+    </button>
+    <button class="tab" data-view="plan" onclick="showView('plan')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V6l6-2 6 2 4-2v13l-4 2-6-2-6 2z"/></svg>
+      <span>План</span>
+    </button>
+  </nav>
+
+  <!-- Relapse modal -->
+  <div class="modal-overlay" id="relapseModal">
+    <div class="modal-sheet">
+      <div class="modal-close"></div>
+      <h2>Зафиксировать срыв</h2>
+      <p class="sub" style="margin-bottom:16px;">Это не провал всего процесса — это данные. Стрик обнулится, а фаза 1 (дни 1–4) начнётся заново, потому что именно в ней тяжелее всего.</p>
+      <textarea id="relapseNote" rows="3" placeholder="Что произошло прямо перед этим?"></textarea>
+      <div style="height:14px;"></div>
+      <button class="btn btn-danger" onclick="confirmRelapse()">Подтвердить срыв</button>
+      <div style="height:8px;"></div>
+      <button class="link-btn" onclick="closeRelapseModal()">Отмена</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ---------- STATE ---------- */
+const STORAGE_KEY = 'dn_balance_state_v1';
+
+function defaultState(){
+  return {
+    startDate: todayISO(),
+    lastRelapseDate: null,
+    urges: [],        // {ts, trigger, outcome}
+    replaceLog: [],   // {ts, activity}
+    journal: [],      // {date, usage, anx, bored, note}
+    bindingLetter: '',
+    customReplacements: []
+  };
+}
+
+function todayISO(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+let state;
+try{
+  const raw = localStorage.getItem(STORAGE_KEY);
+  state = raw ? JSON.parse(raw) : defaultState();
+}catch(e){ state = defaultState(); }
+
+function save(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+/* ---------- NAV ---------- */
+const titles = {today:'Сегодня', urge:'Порыв', replace:'Замена', journal:'Дневник', plan:'План'};
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.view===name));
+  document.getElementById('viewTitle').textContent = titles[name];
+  if(name==='today') renderToday();
+  if(name==='urge') renderUrgeHistory();
+  if(name==='replace') renderReplaceList();
+  if(name==='journal') renderJournalHistory();
+}
+
+/* ---------- DAY / STREAK ---------- */
+function daysBetween(iso1, iso2){
+  const a = new Date(iso1+'T00:00:00');
+  const b = new Date(iso2+'T00:00:00');
+  return Math.round((b-a)/86400000);
+}
+function currentDetoxDay(){
+  const anchor = state.lastRelapseDate || state.startDate;
+  return daysBetween(anchor, todayISO()) + 1;
+}
+
+/* ---------- TODAY VIEW ---------- */
+function todaysUrges(){
+  const t = todayISO();
+  return state.urges.filter(u => u.ts.slice(0,10) === t);
+}
+
+function renderToday(){
+  const day = currentDetoxDay();
+  document.getElementById('dayChip').textContent = 'День ' + day;
+  document.getElementById('statStreak').textContent = day;
+  const tu = todaysUrges();
+  const resisted = tu.filter(u=>u.outcome==='resisted').length;
+  document.getElementById('statUrges').textContent = resisted;
+
+  // phase highlight
+  ['phaseBlock1','phaseBlock2','phaseBlock3'].forEach(id=>document.getElementById(id)?.classList.remove('current'));
+  let activeId = 'phaseBlock1';
+  if(day>=5 && day<=14) activeId='phaseBlock2';
+  else if(day>14) activeId='phaseBlock3';
+  document.getElementById(activeId)?.classList.add('current');
+
+  // beam tilt: recovery grows with day (asymptotic to 30), nudged by today's resist ratio
+  const base = Math.min(day/30, 1); // 0..1
+  const total = tu.length || 0;
+  const ratio = total>0 ? resisted/total : 0.5;
+  const recoveryScore = Math.max(0, Math.min(1, base*0.75 + ratio*0.25));
+  const angle = (recoveryScore - 0.5) * 26; // -13..+13 deg, positive tilts toward teal (recovery) side
+  document.getElementById('beamGroup').style.transform = 'rotate('+angle.toFixed(1)+'deg)';
+
+  let caption;
+  if(day<=4){
+    caption = 'Острая фаза дефицита. Весы качает сильнее — это нормально для дней 1–4.';
+  } else if(recoveryScore < 0.45){
+    caption = 'Пока склоняется к стороне <b>тяги</b>. Каждый пережитый порыв сдвигает баланс.';
+  } else if(recoveryScore < 0.65){
+    caption = 'Баланс выравнивается. Система вознаграждения постепенно перекалибровывается.';
+  } else {
+    caption = 'Весы склоняются к стороне <b>восстановления</b>. Так и должно быть на этом этапе.';
+  }
+  document.getElementById('beamCaption').innerHTML = caption;
+}
+
+/* ---------- RELAPSE MODAL ---------- */
+function openRelapseModal(){ document.getElementById('relapseModal').classList.add('show'); }
+function closeRelapseModal(){ document.getElementById('relapseModal').classList.remove('show'); }
+function confirmRelapse(){
+  const note = document.getElementById('relapseNote').value.trim();
+  state.journal.push({date: todayISO(), usage:null, anx:null, bored:null, note: '[Срыв] '+note, isRelapse:true});
+  state.lastRelapseDate = todayISO();
+  save();
+  document.getElementById('relapseNote').value='';
+  closeRelapseModal();
+  renderToday();
+}
+
+/* ---------- URGE SURFING ---------- */
+let selectedTrigger = null;
+let urgeDurationSec = 15*60;
+let urgeTimerId = null;
+let urgeRemaining = urgeDurationSec;
+
+document.getElementById('triggerChips').addEventListener('click', (e)=>{
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  document.querySelectorAll('#triggerChips .chip').forEach(c=>c.classList.remove('selected'));
+  chip.classList.add('selected');
+  selectedTrigger = chip.dataset.trigger;
+});
+
+function setUrgeDuration(min){
+  urgeDurationSec = min*60;
+  urgeRemaining = urgeDurationSec;
+  updateUrgeTimerDisplay();
+}
+function updateUrgeTimerDisplay(){
+  const m = Math.floor(urgeRemaining/60);
+  const s = urgeRemaining%60;
+  document.getElementById('urgeTimer').textContent = String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+const breatheWords = ['вдох','задержи','выдох'];
+let breatheIdx = 0;
+function startUrgeTimer(){
+  if(urgeTimerId) return;
+  document.getElementById('urgeStartBtn').textContent = 'Идёт…';
+  const breatheEl = document.getElementById('breatheWord');
+  let tick = 0;
+  urgeTimerId = setInterval(()=>{
+    urgeRemaining--;
+    tick++;
+    if(tick % 4 === 0){
+      breatheIdx = (breatheIdx+1) % breatheWords.length;
+      breatheEl.textContent = breatheWords[breatheIdx];
+    }
+    updateUrgeTimerDisplay();
+    if(urgeRemaining<=0){
+      clearInterval(urgeTimerId);
+      urgeTimerId = null;
+      document.getElementById('urgeStartBtn').textContent = 'Начать таймер';
+      breatheEl.textContent = 'волна прошла';
+    }
+  },1000);
+}
+
+function logUrgeOutcome(outcome){
+  state.urges.push({
+    ts: new Date().toISOString(),
+    trigger: selectedTrigger || 'Не указан',
+    outcome
+  });
+  save();
+  selectedTrigger = null;
+  document.querySelectorAll('#triggerChips .chip').forEach(c=>c.classList.remove('selected'));
+  clearInterval(urgeTimerId); urgeTimerId = null;
+  urgeRemaining = urgeDurationSec;
+  updateUrgeTimerDisplay();
+  document.getElementById('breatheWord').textContent = 'дыши';
+  document.getElementById('urgeStartBtn').textContent = 'Начать таймер';
+  renderUrgeHistory();
+}
+
+function renderUrgeHistory(){
+  const list = document.getElementById('urgeHistoryList');
+  const tu = todaysUrges().slice().reverse();
+  if(tu.length===0){ list.className='empty'; list.textContent='Пока ничего не записано.'; return; }
+  list.className='';
+  list.innerHTML = tu.map(u=>{
+    const time = new Date(u.ts).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    const badge = u.outcome==='resisted' ? '<span class="badge resisted">пережил</span>' : '<span class="badge gave-in">открыл</span>';
+    return `<div class="list-item"><div><div>${u.trigger}</div><div class="meta">${time}</div></div>${badge}</div>`;
+  }).join('');
+}
+
+/* ---------- REPLACE ---------- */
+const defaultReplacements = [
+  {icon:'💻', label:'Спринт кода 25 мин', mins:25},
+  {icon:'🚶', label:'Прогулка без телефона', mins:15},
+  {icon:'📞', label:'Звонок клиенту / лид', mins:10},
+  {icon:'🥶', label:'Холодный душ', mins:3},
+  {icon:'📖', label:'Чтение по теме бизнеса', mins:20},
+  {icon:'🏋️', label:'Короткая тренировка', mins:20},
+  {icon:'✏️', label:'Набросать идею продукта', mins:15}
+];
+
+function renderReplaceList(){
+  const wrap = document.getElementById('replaceList');
+  const all = defaultReplacements.concat(state.customReplacements.map(c=>({icon:'✨', label:c, mins:20})));
+  wrap.innerHTML = '<h2>Выбери и сделай сейчас</h2><p class="sub">Не думай — просто начни таймер на любое из этого.</p>' +
+    all.map((r,i)=>`
+      <div class="list-item">
+        <div>${r.icon}&nbsp;&nbsp;${r.label}</div>
+        <button class="btn btn-ghost btn-sm" style="width:auto;" onclick="completeReplace('${r.label.replace(/'/g,"\\'")}')">Готово</button>
+      </div>
+    `).join('');
+}
+function completeReplace(activity){
+  state.replaceLog.push({ts:new Date().toISOString(), activity});
+  save();
+  const btns = document.querySelectorAll('#replaceList .btn-ghost');
+  btns.forEach(b=>{ if(b.getAttribute('onclick').includes(activity.replace(/'/g,"\\'"))){ b.textContent='✓ Сделано'; b.disabled=true; } });
+}
+function addCustomReplace(){
+  const input = document.getElementById('customReplaceInput');
+  const val = input.value.trim();
+  if(!val) return;
+  state.customReplacements.push(val);
+  save();
+  input.value='';
+  renderReplaceList();
+}
+
+/* ---------- JOURNAL ---------- */
+function updateSliderLabel(which){
+  if(which==='usage'){
+    const v = document.getElementById('usageSlider').value;
+    document.getElementById('usageVal').textContent = v+' мин';
+  }
+  if(which==='anx'){
+    document.getElementById('anxVal').textContent = document.getElementById('anxSlider').value+'/5';
+  }
+  if(which==='bored'){
+    document.getElementById('boredVal').textContent = document.getElementById('boredSlider').value+'/5';
+  }
+}
+function saveJournalEntry(){
+  const entry = {
+    date: todayISO(),
+    usage: Number(document.getElementById('usageSlider').value),
+    anx: Number(document.getElementById('anxSlider').value),
+    bored: Number(document.getElementById('boredSlider').value),
+    note: document.getElementById('journalNote').value.trim()
+  };
+  state.journal = state.journal.filter(j => !(j.date===entry.date && !j.isRelapse));
+  state.journal.push(entry);
+  save();
+  document.getElementById('journalNote').value='';
+  renderJournalHistory();
+}
+function renderJournalHistory(){
+  const list = document.getElementById('journalHistoryList');
+  const entries = state.journal.slice().reverse().slice(0,14);
+  if(entries.length===0){ list.className='empty'; list.textContent='Записей пока нет.'; return; }
+  list.className='';
+  list.innerHTML = entries.map(j=>{
+    const dateStr = new Date(j.date+'T00:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
+    if(j.isRelapse){
+      return `<div class="list-item"><div><div>${dateStr}</div><div class="meta">${j.note}</div></div><span class="badge gave-in">срыв</span></div>`;
+    }
+    return `<div class="list-item"><div><div>${dateStr} · ${j.usage} мин TikTok</div><div class="meta">${j.note || 'без заметки'}</div></div><div class="meta">тревога ${j.anx}/5</div></div>`;
+  }).join('');
+}
+
+/* ---------- PLAN ---------- */
+function saveBindingLetter(){
+  state.bindingLetter = document.getElementById('bindingLetter').value;
+  save();
+  const btn = event.target;
+  const orig = btn.textContent;
+  btn.textContent = 'Сохранено ✓';
+  setTimeout(()=>{ btn.textContent = orig; }, 1400);
+}
+function confirmResetStart(){
+  if(confirm('Установить сегодняшний день как День 1 детокса?')){
+    state.startDate = todayISO();
+    state.lastRelapseDate = null;
+    save();
+    renderToday();
+    alert('Готово. Сегодня — День 1.');
+  }
+}
+
+/* ---------- INIT ---------- */
+document.getElementById('bindingLetter').value = state.bindingLetter || '';
+updateUrgeTimerDisplay();
+renderToday();
+</script>
+</body>
+</html>
