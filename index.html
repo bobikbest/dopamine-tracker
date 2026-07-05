@@ -33,7 +33,7 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--font-ui);-webkit-font-smoothing:antialiased;overscroll-behavior:none;user-select:none;}
-#app{max-width:480px;margin:0 auto;height:100vh;height:100dvh;display:flex;flex-direction:column;position:relative;background:radial-gradient(120% 60% at 50% -10%,rgba(232,163,61,0.06),transparent 60%),var(--bg);}
+#app{max-width:480px;margin:0 auto;height:100vh;height:100dvh;display:flex;flex-direction:column;background:radial-gradient(120% 60% at 50% -10%,rgba(232,163,61,0.06),transparent 60%),var(--bg);}
 
 /* ── TRANSITIONS ── */
 .view{display:none;}
@@ -121,7 +121,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .empty{text-align:center;padding:30px 10px;color:var(--text-faint);font-size:13.5px;}
 
 /* modals */
-.modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;z-index:50;opacity:0;pointer-events:none;transition:opacity .22s ease;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;z-index:50;opacity:0;pointer-events:none;transition:opacity .22s ease;}
 .modal-overlay.show{opacity:1;pointer-events:auto;}
 .modal-sheet{background:var(--surface);width:100%;border-radius:24px 24px 0 0;padding:22px 20px calc(26px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);max-height:86vh;overflow-y:auto;}
 .modal-overlay.show .modal-sheet{transform:translateY(0);}
@@ -196,7 +196,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .viz-dot.done{background:rgba(124,111,205,0.4);}
 
 /* ── ONBOARDING / PWA ── */
-.overlay-screen{position:absolute;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px calc(40px + env(safe-area-inset-bottom));animation:fadeIn .35s ease;}
+.overlay-screen{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px calc(40px + env(safe-area-inset-bottom));animation:fadeIn .35s ease;}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .overlay-screen h2{font-family:var(--font-display);font-size:26px;font-weight:600;margin:0 0 8px;text-align:center;letter-spacing:-0.02em;}
 .overlay-screen p{color:var(--text-dim);font-size:14px;text-align:center;line-height:1.6;margin:0 0 24px;}
@@ -521,29 +521,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 
 </main>
 
-<nav class="tabbar">
-  <button class="tab active" data-view="today" onclick="showView('today')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4M12 19.6V22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M2 12h2.4M19.6 12H22M4.9 19.1l1.7-1.7M17.4 6.6l1.7-1.7"/></svg>
-    <span>Сегодня</span>
-  </button>
-  <button class="tab" data-view="urge" onclick="showView('urge')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/></svg>
-    <span>Порыв</span>
-  </button>
-  <button class="tab" data-view="habits" onclick="showView('habits')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-    <span>Привычки</span>
-  </button>
-  <button class="tab" data-view="viz" onclick="showView('viz')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10"/><path d="M12 8v4l3 3"/><circle cx="18" cy="6" r="3" fill="currentColor" stroke="none" opacity=".4"/></svg>
-    <span>Визуализ.</span>
-  </button>
-  <button class="tab" data-view="analytics" onclick="showView('analytics')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M8 20V4M12 20v-6M16 20V8M20 20v-3"/></svg>
-    <span>Прогресс</span>
-  </button>
-</nav>
-
 <!-- modals -->
 <div class="modal-overlay" id="relapseModal">
   <div class="modal-sheet">
@@ -589,6 +566,30 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 </div>
 
 </div>
+
+<nav class="tabbar">
+  <button class="tab active" data-view="today" onclick="showView('today')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4M12 19.6V22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M2 12h2.4M19.6 12H22M4.9 19.1l1.7-1.7M17.4 6.6l1.7-1.7"/></svg>
+    <span>Сегодня</span>
+  </button>
+  <button class="tab" data-view="urge" onclick="showView('urge')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/></svg>
+    <span>Порыв</span>
+  </button>
+  <button class="tab" data-view="habits" onclick="showView('habits')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span>Привычки</span>
+  </button>
+  <button class="tab" data-view="viz" onclick="showView('viz')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10"/><path d="M12 8v4l3 3"/><circle cx="18" cy="6" r="3" fill="currentColor" stroke="none" opacity=".4"/></svg>
+    <span>Визуализ.</span>
+  </button>
+  <button class="tab" data-view="analytics" onclick="showView('analytics')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M8 20V4M12 20v-6M16 20V8M20 20v-3"/></svg>
+    <span>Прогресс</span>
+  </button>
+</nav>
+
 <script>
 /* ── STATE ── */
 const SK = 'dn_balance_v3';
