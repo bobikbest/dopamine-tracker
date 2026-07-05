@@ -32,8 +32,8 @@
   --font-display:"New York","Iowan Old Style",Georgia,serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{margin:0;padding:0;height:100svh;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font-ui);-webkit-font-smoothing:antialiased;overscroll-behavior:none;user-select:none;}
-#app{max-width:480px;margin:0 auto;height:100svh;display:flex;flex-direction:column;background:radial-gradient(120% 60% at 50% -10%,rgba(232,163,61,0.06),transparent 60%),var(--bg);}
+html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--font-ui);-webkit-font-smoothing:antialiased;overscroll-behavior:none;user-select:none;}
+#app{max-width:480px;margin:0 auto;position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;background:radial-gradient(120% 60% at 50% -10%,rgba(232,163,61,0.06),transparent 60%),var(--bg);}
 
 /* ── TRANSITIONS ── */
 .view{display:none;}
