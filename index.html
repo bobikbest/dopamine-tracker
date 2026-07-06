@@ -37,7 +37,7 @@ html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);
 
 /* ── TRANSITIONS ── */
 .view{display:none;}
-.view.active{display:block;animation:slideUp .3s cubic-bezier(.22,.68,0,1.2) both;}
+.view.active{display:block;}
 @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-l);padding:18px;margin-bottom:12px;transition:transform .15s ease,box-shadow .15s ease;}
 .card:active{transform:scale(0.99);}
@@ -591,19 +591,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 </nav>
 
 <script>
-/* ── FREEZE SAFE-AREA (iOS PWA fixes bottom bar flicker) ── */
+/* ── FREEZE SAFE-AREA (single measurement, no repeated updates) ── */
 (function freezeSafeArea(){
   const probe = document.createElement('div');
   probe.style.cssText = 'position:fixed;bottom:0;left:0;height:0;padding-bottom:env(safe-area-inset-bottom);visibility:hidden;pointer-events:none;';
   document.body.appendChild(probe);
-  const measure = ()=>{
-    const val = parseFloat(getComputedStyle(probe).paddingBottom) || 20;
-    document.documentElement.style.setProperty('--sab', Math.max(val,20)+'px');
-  };
-  measure();
-  // re-measure a few times during the first 3s while iOS UI settles, then lock forever
-  let count=0;
-  const iv=setInterval(()=>{ measure(); count++; if(count>=6){ clearInterval(iv); probe.remove(); } },500);
+  const val = parseFloat(getComputedStyle(probe).paddingBottom) || 20;
+  document.documentElement.style.setProperty('--sab', Math.max(val,20)+'px');
+  probe.remove();
 })();
 
 /* ── STATE ── */
@@ -637,6 +632,32 @@ function save(){ try{ localStorage.setItem(SK,JSON.stringify(state)); }catch(e){
 
 /* ── NAV ── */
 const TITLES={today:'Сегодня',urge:'Порыв',replace:'Замена',habits:'Привычки',viz:'Визуализация',analytics:'Прогресс',journal:'Дневник',plan:'План'};
+
+/* ── SWIPE NAVIGATION (left/right between main tabs, Tinder-style) ── */
+const SWIPE_ORDER = ['today','urge','habits','viz','analytics'];
+(function setupSwipe(){
+  const main = document.querySelector('main');
+  let startX=0, startY=0, tracking=false;
+  main.addEventListener('touchstart', e=>{
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    tracking = true;
+  }, {passive:true});
+  main.addEventListener('touchend', e=>{
+    if(!tracking) return;
+    tracking = false;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    // ignore mostly-vertical swipes (that's scrolling) and short swipes
+    if(Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy)*1.5) return;
+    const current = document.querySelector('.tab.active')?.dataset.view;
+    const idx = SWIPE_ORDER.indexOf(current);
+    if(idx === -1) return;
+    if(dx < 0 && idx < SWIPE_ORDER.length-1){ showView(SWIPE_ORDER[idx+1]); }   // swipe left → next tab
+    else if(dx > 0 && idx > 0){ showView(SWIPE_ORDER[idx-1]); }                 // swipe right → prev tab
+  }, {passive:true});
+})();
+
 function showView(name){
   document.querySelectorAll('.view').forEach(v=>{ v.classList.remove('active'); });
   const el=document.getElementById('view-'+name);
