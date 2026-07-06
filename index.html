@@ -234,19 +234,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 </div>
 
 <!-- ── PWA INSTALL GUIDE ── -->
-<div id="pwaGuide" class="overlay-screen" style="display:none;">
-  <div class="ob-icon">📲</div>
-  <h2>Добавь на экран</h2>
-  <p>Открывай Баланс как приложение — без адресной строки и с быстрым запуском.</p>
-  <div class="pwa-steps">
-    <div class="pwa-step"><div class="pwa-num">1</div><p id="pwaStep1">Нажми кнопку <b>Поделиться</b> внизу браузера (значок квадрата со стрелкой)</p></div>
-    <div class="pwa-step"><div class="pwa-num">2</div><p id="pwaStep2">Выбери <b>«Добавить на экран "Домой"»</b> в списке</p></div>
-    <div class="pwa-step"><div class="pwa-num">3</div><p>Нажми <b>«Добавить»</b> — иконка появится на рабочем столе</p></div>
-  </div>
-  <button class="btn btn-primary" id="pwaActionBtn" onclick="dismissPwa()" style="max-width:320px;width:100%;">Понятно</button>
-  <button class="link-btn" onclick="dismissPwa()">Не сейчас</button>
-</div>
-
 <header class="topbar">
   <h1 id="viewTitle">Сегодня</h1>
   <div class="day-chip" id="dayChip">День 1</div>
@@ -256,6 +243,21 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 
 <!-- ===== TODAY ===== -->
 <section class="view active" id="view-today">
+
+  <div id="pwaGuide" class="card" style="display:none;border:1.5px solid var(--amber);">
+    <div class="row" style="margin-bottom:10px;">
+      <h2 style="margin:0;">📲 Добавь на экран</h2>
+      <button style="background:none;border:none;color:var(--text-faint);font-size:20px;cursor:pointer;padding:2px 6px;" onclick="dismissPwa()">×</button>
+    </div>
+    <p class="sub" style="margin-bottom:14px;">Открывай Баланс как приложение — без адресной строки браузера.</p>
+    <div class="pwa-steps">
+      <div class="pwa-step"><div class="pwa-num">1</div><p id="pwaStep1">Нажми кнопку <b>Поделиться</b> внизу браузера (значок квадрата со стрелкой)</p></div>
+      <div class="pwa-step"><div class="pwa-num">2</div><p id="pwaStep2">Выбери <b>«Добавить на экран "Домой"»</b> в списке</p></div>
+      <div class="pwa-step"><div class="pwa-num">3</div><p>Нажми <b>«Добавить»</b> — иконка появится на рабочем столе</p></div>
+    </div>
+    <button class="btn btn-primary" id="pwaActionBtn" onclick="dismissPwa()">Понятно</button>
+  </div>
+
   <div class="card">
     <div class="beam-wrap">
       <svg class="beam-svg" viewBox="0 0 300 130" id="beamSvg">
@@ -679,7 +681,7 @@ function showView(name){
 /* ── ONBOARDING ── */
 function checkScreens(){
   if(!state.onboardingDone){ document.getElementById('onboarding').style.display='flex'; return; }
-  if(!state.pwaDismissed){ setTimeout(()=>{ document.getElementById('pwaGuide').style.display='flex'; },800); }
+  if(!state.pwaDismissed){ setTimeout(()=>{ document.getElementById('pwaGuide').style.display='block'; },800); }
 }
 document.getElementById('addictionChips').addEventListener('click',e=>{
   const c=e.target.closest('.chip'); if(!c) return;
@@ -691,7 +693,7 @@ function finishOnboarding(){
   state.onboardingDone=true; save();
   document.getElementById('onboarding').style.display='none';
   updateAddictionLabel(); renderPlanAddictions();
-  setTimeout(()=>{ document.getElementById('pwaGuide').style.display='flex'; },600);
+  setTimeout(()=>{ document.getElementById('pwaGuide').style.display='block'; },600);
 }
 
 /* ── PWA ── */
