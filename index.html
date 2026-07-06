@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#0B0E11">
 <style>
 :root{
-  --sab:20px;
+  --sab:8px;
   --bg:#0B0E11;
   --surface:#14181D;
   --surface-2:#1C2128;
@@ -89,7 +89,7 @@ textarea:focus,input[type=text]:focus{outline:none;border-color:rgba(232,163,61,
 textarea::placeholder,input::placeholder{color:var(--text-faint);}
 
 /* tabbar */
-nav.tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;align-items:center;padding:8px 6px calc(8px + var(--sab, 20px));background:rgba(20,24,29,0.95);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);border-top:1px solid var(--border);z-index:10;}
+nav.tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;align-items:center;padding:6px 6px max(6px, var(--sab, 8px));background:rgba(20,24,29,0.95);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);border-top:1px solid var(--border);z-index:10;}
 .tab{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-faint);flex:1;padding:6px 2px;cursor:pointer;background:none;border:none;transition:color .2s;}
 .tab svg{width:22px;height:22px;}
 .tab span{font-size:9.5px;font-weight:500;}
@@ -600,7 +600,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
   probe.style.cssText = 'position:fixed;bottom:0;left:0;height:0;padding-bottom:env(safe-area-inset-bottom);visibility:hidden;pointer-events:none;';
   document.body.appendChild(probe);
   const val = parseFloat(getComputedStyle(probe).paddingBottom) || 20;
-  document.documentElement.style.setProperty('--sab', Math.max(val,20)+'px');
+  document.documentElement.style.setProperty('--sab', Math.max(val,8)+'px');
   probe.remove();
 })();
 
