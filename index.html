@@ -10,6 +10,7 @@
 <meta name="theme-color" content="#0B0E11">
 <style>
 :root{
+  --sab:20px;
   --bg:#0B0E11;
   --surface:#14181D;
   --surface-2:#1C2128;
@@ -646,6 +647,9 @@ const SWIPE_ORDER = ['today','urge','habits','viz','analytics'];
   main.addEventListener('touchend', e=>{
     if(!tracking) return;
     tracking = false;
+    // if finger lifted over the tabbar itself, let it behave as a normal tap — don't treat as swipe
+    const endEl = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    if(endEl && endEl.closest('nav.tabbar')) return;
     const dx = e.changedTouches[0].clientX - startX;
     const dy = e.changedTouches[0].clientY - startY;
     // ignore mostly-vertical swipes (that's scrolling) and short swipes
